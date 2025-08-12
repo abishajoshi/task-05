@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      initContainers:
+      - name: wait-for-mongo
+        image: busybox:1.35.0-uclibc
+        command:
+          ['sh', '-c', 'until nc -z mongo 27017; do echo "waiting for mongodb"; sleep 2; done;']
+      containers:
+      - name: node
+        image: rahman5828/my-node-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_URL
+          value: mongodb://mongo:27017/mydb
